@@ -113,4 +113,49 @@ object MockDataGenerator {
             }
         )
     }
+
+    fun generateReviews(productId: String, count: Int = 10): List<Review> {
+        val comments = listOf(
+            "Amazing quality, worth every penny!",
+            "Fast shipping and great customer service.",
+            "The product is okay, but the packaging was damaged.",
+            "Exactly what I was looking for. 5 stars!",
+            "A bit expensive compared to other sellers.",
+            "I love the design and the build quality is top-notch.",
+            "Took a while to arrive, but the product is great.",
+            "Very satisfied with my purchase. Will buy again.",
+            "The colors are slightly different from the pictures.",
+            "Highly recommend this seller!"
+        )
+        val names = listOf("Alex", "Sam", "Chris", "Jordan", "Taylor", "Morgan", "Casey")
+        
+        return (1..count).map {
+            Review(
+                id = UUID.randomUUID().toString(),
+                productId = productId,
+                userName = names.random(),
+                rating = random.nextInt(3, 6),
+                comment = comments.random(),
+                timestamp = System.currentTimeMillis() - (random.nextLong(0, 100) * 60 * 60 * 1000)
+            )
+        }
+    }
+
+    fun generateLargeAuditLog(count: Int = 500): List<String> {
+        val actions = listOf("LOGIN", "LOGOUT", "PURCHASE", "REFUND", "SEARCH", "PROFILE_UPDATE", "PASSWORD_CHANGE")
+        val statuses = listOf("SUCCESS", "FAILED", "PENDING", "BLOCKED")
+        
+        return (1..count).map {
+            "LOG|${System.currentTimeMillis() - it * 1000}|${actions.random()}|USER-${random.nextInt(1000, 9999)}|${statuses.random()}|REQ-${UUID.randomUUID().toString().take(6)}"
+        }
+    }
+
+    fun generateCategoryMetadata(): Map<String, Map<String, Any>> {
+        return mapOf(
+            "Electronics" to mapOf("tax" to 0.18, "insurance" to true, "shipping_weight" to 2.5, "shelf_life" to -1),
+            "Fashion" to mapOf("tax" to 0.12, "insurance" to false, "shipping_weight" to 0.8, "shelf_life" to 24),
+            "Home" to mapOf("tax" to 0.16, "insurance" to true, "shipping_weight" to 5.0, "shelf_life" to -1),
+            "Beauty" to mapOf("tax" to 0.20, "insurance" false, "shipping_weight" to 0.3, "shelf_life" to 12)
+        )
+    }
 }
