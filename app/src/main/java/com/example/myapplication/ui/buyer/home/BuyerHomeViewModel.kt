@@ -7,6 +7,8 @@ import com.example.myapplication.data.model.Product
 import com.example.myapplication.data.repository.ProductRepository
 import kotlinx.coroutines.flow.*
 
+import kotlinx.coroutines.launch
+
 class BuyerHomeViewModel : ViewModel() {
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery
@@ -16,10 +18,19 @@ class BuyerHomeViewModel : ViewModel() {
 
     val categories: List<Category> = ProductRepository.categories
 
+    init {
+        viewModelScope.launch {
+            ProductRepository.seedDatabase()
+        }
+    }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     val filteredProducts: StateFlow<List<Product>> = combine(
         _searchQuery,
         _selectedCategoryId
     ) { query, categoryId ->
+        Pair(query, categoryId)
+    }.flatMapLatest { (query, categoryId) ->
         ProductRepository.filterProducts(query, categoryId)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 

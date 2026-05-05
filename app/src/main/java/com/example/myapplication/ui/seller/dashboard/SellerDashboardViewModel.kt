@@ -3,12 +3,13 @@ package com.example.myapplication.ui.seller.dashboard
 import androidx.lifecycle.ViewModel
 import com.example.myapplication.data.model.Product
 import com.example.myapplication.data.repository.ProductRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.*
 
 class SellerDashboardViewModel : ViewModel() {
-    private val _inventory = MutableStateFlow(ProductRepository.products.filter { it.sellerId == "s1" })
-    val inventory: StateFlow<List<Product>> = _inventory
+    val inventory: StateFlow<List<Product>> = ProductRepository.getAllProducts()
+        .map { products -> products.filter { it.sellerId == "s1" } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val totalSales = 1250
     val rating = 4.8

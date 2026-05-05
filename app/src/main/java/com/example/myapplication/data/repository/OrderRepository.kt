@@ -6,14 +6,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.*
 
-object OrderRepository {
-    private val _orders = MutableStateFlow<List<Order>>(listOf(
-        Order("ord1", "1", "user1", "s1", "d1", OrderStatus.PROCESSING, System.currentTimeMillis()),
-        Order("ord2", "3", "user1", "s2", null, OrderStatus.PENDING, System.currentTimeMillis())
-    ))
-    val orders: StateFlow<List<Order>> = _orders
+import com.example.myapplication.MyApplication
+import com.example.myapplication.data.local.entity.OrderEntity
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
-    fun placeOrder(productId: String, buyerId: String, sellerId: String) {
+object OrderRepository {
+    private val orderDao = MyApplication.database.orderDao()
+
+    val orders: Flow<List<Order>> = orderDao.getAllOrders().map { entities ->
+        entities.map { it.toDomain() }
+    }
+
+    suspend fun placeOrder(productId: String, buyerId: String, sellerId: String) {
         val newOrder = Order(
             id = "ord${UUID.randomUUID().toString().take(5)}",
             productId = productId,
@@ -23,6 +28,14 @@ object OrderRepository {
             status = OrderStatus.PENDING,
             timestamp = System.currentTimeMillis()
         )
-        _orders.value = _orders.value + newOrder
+        orderDao.insertOrder(newOrder.toEntity())
     }
+
+    private fun Order.toEntity() = OrderEntity(
+        id, productId, buyerId, sellerId, driverId, status, timestamp
+    )
+
+    private fun OrderEntity.toDomain() = Order(
+        id, productId, buyerId, sellerId, driverId, status, timestamp
+    )
 }
